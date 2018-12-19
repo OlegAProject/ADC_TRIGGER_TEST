@@ -5,13 +5,12 @@
 
 int k = 0;
 
-#define ADC1_NUM_CHANNELS   2 //  количество используемых каналов
-#define ADC1_BUF_DEPTH      1 //  глубина буффера
+#define ADC1_NUM_CHANNELS   1 
+#define ADC1_BUF_DEPTH      1 
 
-static adcsample_t samples1[ADC1_NUM_CHANNELS * ADC1_BUF_DEPTH]; // сам буффер
+static adcsample_t samples1[ADC1_NUM_CHANNELS * ADC1_BUF_DEPTH]; 
 
-/* конфигурация таймера для работы с АЦП (режим триггера) */
-static const GPTConfig gpt4cfg1 = { // используем 4й таймер
+static const GPTConfig gpt4cfg1 = { 
   .frequency =  100000,
   .callback  =  NULL,
   .cr2       =  TIM_CR2_MMS_1,  /* MMS = 010 = TRGO on Update Event.        */
@@ -19,7 +18,6 @@ static const GPTConfig gpt4cfg1 = { // используем 4й таймер
   /* .dier field is direct setup of register, we don`t need to set anything here until now */
 };
 
-/* вызывается, когда АЦП завершит преобразование */
 static void adccallback(ADCDriver *adcp, adcsample_t *buffer, size_t n)
 {
 	adcp = adcp; n = n;
@@ -34,7 +32,6 @@ static void adccallback(ADCDriver *adcp, adcsample_t *buffer, size_t n)
 	pwmEnableChannel(&PWMD3, 2 , k);
 }
 
-/* вызывается при наличии ошибки */
 static void adcerrorcallback(ADCDriver *adcp, adcerror_t err) {
 
   (void)adcp;
@@ -42,22 +39,21 @@ static void adcerrorcallback(ADCDriver *adcp, adcerror_t err) {
 }
 
 static const ADCConversionGroup adcgrpcfg1 = {
-  .circular     = true,                     // зацикленный режим работы
+  .circular     = true,                    
   /* Buffer will continue writing to the beginning when it come to the end */
-  .num_channels = ADC1_NUM_CHANNELS,       // кол-во каналов
-  .end_cb       = adccallback,              // определение действия после завершения преобразования
-  .error_cb     = adcerrorcallback,         // определение действия при наличии ошибки
+  .num_channels = ADC1_NUM_CHANNELS,       
+  .end_cb       = adccallback,              
+  .error_cb     = adcerrorcallback,         
   .cr1          = 0,
   .cr2          = ADC_CR2_EXTEN_RISING | ADC_CR2_EXTSEL_SRC(12),  // Commutated from GPT
   /* 12 means 0b1100, and from RM (p.449) it is GPT4 */
   /* ADC_CR2_EXTEN_RISING - means to react on the rising signal (front) */
   .smpr1        = ADC_SMPR1_SMP_AN10(ADC_SAMPLE_144),       // for AN10 - 144 samples
-  .smpr2        = ADC_SMPR2_SMP_AN3(ADC_SAMPLE_144),        // for AN3  - 144 samples
+  .smpr2        = 0,        
   .sqr1         = ADC_SQR1_NUM_CH(ADC1_NUM_CHANNELS),   //
   /* Usually this field is set to 0 as config already know the number of channels (.num_channels) */
   .sqr2         = 0,
-  .sqr3         = ADC_SQR3_SQ1_N(ADC_CHANNEL_IN3) |         // sequence of channels
-                  ADC_SQR3_SQ2_N(ADC_CHANNEL_IN10)
+  .sqr3         = ADC_SQR3_SQ1_N(ADC_CHANNEL_IN10)        // sequence of channels
   /* If we can macro ADC_SQR2_SQ... we need to write to .sqr2 */
 };
 
@@ -90,7 +86,6 @@ void adc_set_and_start(void)
     adcStart(&ADCD1, NULL);
     adcStartConversion(&ADCD1, &adcgrpcfg1, samples1, ADC1_BUF_DEPTH);
     palSetLineMode( LINE_ADC123_IN10, PAL_MODE_INPUT_ANALOG );  // PC0
-    palSetLineMode( LINE_ADC123_IN3, PAL_MODE_INPUT_ANALOG );   // PA3
 
     gptStart(&GPTD4, &gpt4cfg1);
     gptStartContinuous(&GPTD4, gpt4cfg1.frequency/1000);
