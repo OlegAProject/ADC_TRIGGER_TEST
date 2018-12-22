@@ -3,8 +3,6 @@
 
 #include <chprintf.h>
 
-int k = 0;
-
 #define ADC1_NUM_CHANNELS   1 
 #define ADC1_BUF_DEPTH      1 
 
@@ -23,9 +21,6 @@ static const GPTConfig gpt4cfg1 = {
 static void adccallback(ADCDriver *adcp, adcsample_t *buffer, size_t n)
 {
 	adcp = adcp; n = n;
-
-    k = buffer[0];
-    chprintf( (BaseSequentialStream *)&SD7, " %d \n\r", buffer[0], n );
 }
 
 
@@ -71,11 +66,11 @@ void sd_set(void)
 
 void matlab_msg(void)
 {
-	uint32_t array[1] = {k};
+	uint16_t pot_value[1] = {buffer[0]};
 	msg_t msg = sdGetTimeout( &SD7, MS2ST( 30 ) );
 	if ( msg >= 0 )
 		{
-			sdWrite( &SD7, (uint8_t *)array, sizeof( array ));
+			sdWrite( &SD7, (uint8_t *)pot_value, sizeof( pot_value ));
 		}
 }
 
@@ -120,7 +115,7 @@ int main(void)
     while (true)
     {
     	matlab_msg();
-    	pwmEnableChannel(&PWMD3, 2 , k);
+    	pwmEnableChannel(&PWMD3, 2 , buffer[0]);
     	chThdSleepMilliseconds(5);
     }
 }
