@@ -20,14 +20,15 @@ static const GPTConfig gpt4cfg1 = {
 
 static void adccallback(ADCDriver *adcp, adcsample_t *buffer, size_t n)
 {
-	adcp = adcp; n = n;
+    adcp = adcp;
+    n = n;
 }
 
 
 static void adcerrorcallback(ADCDriver *adcp, adcerror_t err) {
 
-  (void)adcp;
-  (void)err;
+   (void)adcp;
+   (void)err;
 }
 
 static const ADCConversionGroup adcgrpcfg1 = {
@@ -66,12 +67,11 @@ void sd_set(void)
 
 void matlab_msg(void)
 {
-	uint16_t pot_value[1] = {buffer[0]};
-	msg_t msg = sdGetTimeout( &SD7, MS2ST( 30 ) );
-	if ( msg >= 0 )
-		{
-			sdWrite( &SD7, (uint8_t *)pot_value, sizeof( pot_value ));
-		}
+    uint16_t pot_value[1] = {buffer[0]};
+    msg_t msg = sdGetTimeout( &SD7, MS2ST( 30 ) );
+    if ( msg >= 0 ) {
+	sdWrite( &SD7, (uint8_t *)pot_value, sizeof( pot_value ));
+    }
 }
 
 void adc_set_and_start(void)
